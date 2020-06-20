@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/badoux/goscraper"
@@ -29,13 +30,17 @@ type FollowingRecord struct {
 	}
 }
 
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Keepin me alive!")
+}
+
 func main() {
 
 	// Load .env file
 	err := godotenv.Load()
 
 	if err != nil {
-		fmt.Println("Error! Couldn't load .env!")
+		fmt.Println(err)
 		return
 	}
 
@@ -133,7 +138,13 @@ func main() {
 	fmt.Println("Listening....")
 
 	// Read stream (loops forever until disconnect)
-	for message := range stream.Messages {
-		demux.Handle(message)
-	}
+	go func(stream *twitter.Stream, demux twitter.SwitchDemux) {
+		for message := range stream.Messages {
+			demux.Handle(message)
+		}
+	}(stream, demux)
+
+	// create a server for repl.it hosting keep alive
+	http.HandleFunc("/", rootHandler)
+	http.ListenAndServe(":8080", nil)
 }

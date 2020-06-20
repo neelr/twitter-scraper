@@ -34,6 +34,16 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Keepin me alive!")
 }
 
+// Finds item in array
+func Find(slice []string, val string) (int, bool) {
+	for i, item := range slice {
+		if item == val {
+			return i, true
+		}
+	}
+	return -1, false
+}
+
 func main() {
 
 	// Load .env file
@@ -97,7 +107,13 @@ func main() {
 	demux := twitter.NewSwitchDemux()
 
 	demux.Tweet = func(tweet *twitter.Tweet) {
-		fmt.Println("New Tweet!")
+		fmt.Println("New Tweet from " + tweet.User.Name)
+
+		_, fromUser := Find(allID, tweet.User.IDStr)
+
+		if !fromUser {
+			return
+		}
 
 		// Get all url's in tweet text
 		urls := urlParse.FindAllString(tweet.Text, -1)

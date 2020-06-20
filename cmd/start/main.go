@@ -116,7 +116,7 @@ func main() {
 		}
 
 		// Get all url's in tweet text
-		urls := urlParse.FindAllString(tweet.Text, -1)
+		urls := urlParse.FindAllString(tweet.ExtendedTweet.FullText, -1)
 
 		for _, url := range urls {
 			// Scrape the url
